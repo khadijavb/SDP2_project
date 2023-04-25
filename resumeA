@@ -1,36 +1,35 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import docx
+import nltk
 import numpy as np
-from nltk.stem import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
+import pypandoc
+docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
+output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
+assert output == ""
+f = open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r")
+fullText1= f.read()
+res1 = nltk.word_tokenize(fullText1.replace(".","").replace(",",""))
 
-doc1 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d1.docx")
-fullText1 = []
-for para in doc1.paragraphs:
-  fullText1.append(para.text.replace(".","").replace(",",""))
-res1 = [sub.split() for sub in fullText1]
+docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d2.docx'
+output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test2.txt")
+assert output == ""
+f = open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r")
+fullText2= f.read()
+res2 = nltk.word_tokenize(fullText2.replace(".","").replace(",",""))
 
-doc2 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d2.docx")
-fullText2 = []
-for para in doc2.paragraphs:
-  fullText2.append(para.text.replace(".","").replace(",",""))
-res2 = [sub.split() for sub in fullText2]
-
-# sw contains the list of stopwords
 sw = stopwords.words('english')
 l1 =[]; l2 =[]
 X_set=[]; Y_set=[]
-# remove stop words from the string
-for i in range(len(res1)):
-    for word in res1[i]:
-        if word.lower() not in sw:
-            X_set.append(lemmatizer.lemmatize(word.lower()))
 
-for i in range(len(res2)):
-    for word in res2[i]:
-        if word.lower() not in sw:
-            Y_set.append(lemmatizer.lemmatize(word.lower()))
+for word in res1:
+    if word.lower() not in sw:
+        X_set.append(lemmatizer.lemmatize(word.lower()))
+
+
+for word in res2:
+    if word.lower() not in sw:
+        Y_set.append(lemmatizer.lemmatize(word.lower()))
             
            
 rvector = X_set +Y_set
