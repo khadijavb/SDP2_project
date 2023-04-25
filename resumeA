@@ -1,37 +1,43 @@
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import docx
+import numpy as np
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+
 doc1 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d1.docx")
 fullText1 = []
 for para in doc1.paragraphs:
-  fullText1.append(para.text)
+  fullText1.append(para.text.replace(".","").replace(",",""))
+res1 = [sub.split() for sub in fullText1]
 
 doc2 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d2.docx")
 fullText2 = []
 for para in doc2.paragraphs:
-  fullText2.append(para.text)
+  fullText2.append(para.text.replace(".","").replace(",",""))
+res2 = [sub.split() for sub in fullText2]
 
-X_list= []
-for p in fullText1:
-    X_list.append(word_tokenize(p))
-    
-Y_list= [] 
-for p in fullText2:
-    Y_list.append(word_tokenize(p))
-
-
+# sw contains the list of stopwords
 sw = stopwords.words('english')
-l1 =[];l2 =[]
+l1 =[]; l2 =[]
+X_set=[]; Y_set=[]
+# remove stop words from the string
+for i in range(len(res1)):
+    for word in res1[i]:
+        if word.lower() not in sw:
+            X_set.append(lemmatizer.lemmatize(word.lower()))
 
-X_set = {w for w in X_list if not w in sw}
-Y_set = {w for w in Y_list if not w in sw}
-
-rvector = X_set.union(Y_set)
-for w in rvector:
-	if w in X_set: l1.append(1) # create a vector
+for i in range(len(res2)):
+    for word in res2[i]:
+        if word.lower() not in sw:
+            Y_set.append(lemmatizer.lemmatize(word.lower()))
+            
+           
+rvector = X_set +Y_set
+for word in rvector:
+	if word in X_set: l1.append(1) # create a vector
 	else: l1.append(0)
-	if w in Y_set: l2.append(1)
+	if word in Y_set: l2.append(1)
 	else: l2.append(0)
 c = 0
 
@@ -39,4 +45,5 @@ c = 0
 for i in range(len(rvector)):
 		c+= l1[i]*l2[i]
 cosine = c / float((sum(l1)*sum(l2))**0.5)
-print("similarity: ", cosine)
+print("similarity:", "%.1f" % (cosine*100))
+            
