@@ -4,6 +4,8 @@ import docx
 import nltk
 import numpy as np
 import pypandoc
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
 docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
 output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
 assert output == ""
@@ -34,7 +36,7 @@ for word in res2:
            
 rvector = X_set +Y_set
 for word in rvector:
-	if word in X_set: l1.append(1) # create a vector
+	if word in X_set: l1.append(1) 
 	else: l1.append(0)
 	if word in Y_set: l2.append(1)
 	else: l2.append(0)
