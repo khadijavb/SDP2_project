@@ -1,48 +1,46 @@
+from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.tokenize import word_tokenize
 import docx
 import nltk
-import re
 import numpy as np
-import pypandoc
+import pypandoc  
+lemmatizer = WordNetLemmatizer()
+
+import spacy
+from spacy import displacy
+NER = spacy.load("en_core_web_sm")
+
 docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
 output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
 assert output == ""
 f = open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r")
 fullText1= f.read()
 
-res1 = nltk.word_tokenize(fullText1.replace(".","").replace(",",""))
-stopWords = set(stopwords.words("english")) 
-freqTable = dict() 
-for word in res1: 
-    word = word.lower() 
-    if word in stopWords: 
-        continue
-    if word in freqTable: 
-        freqTable[word] += 1
-    else: 
-        freqTable[word] = 1
 
+doc2 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d2.docx")
+fullText2 = []
+for para in doc2.paragraphs:
+  fullText2.append(para.text.replace(".","").replace(",",""))
+res2 = [sub.split() for sub in fullText2]
 
-sentences = sent_tokenize(fullText1) 
-sentenceValue = dict() 
-for sentence in sentences: 
-    for word, freq in freqTable.items(): 
-        if word in sentence.lower(): 
-            if sentence in sentenceValue: 
-                sentenceValue[sentence] += freq 
-            else: 
-                sentenceValue[sentence] = freq 
+# sw contains the list of stopwords
+sw = stopwords.words('english')
+l1 =[]; l2 =[]
+X_set=[]; Y_set=[]
+# remove stop words from the string
 
-sumValues = 0
-for sentence in sentenceValue: 
-    sumValues += sentenceValue[sentence] 
-
-average = int(sumValues / len(sentenceValue)) 
-
-summary = '' 
-for sentence in sentences: 
-    if (sentence in sentenceValue) and (sentenceValue[sentence] > (1.2 * average)): 
-        summary += " " + sentence 
-
-print(summary)
+for i in range(len(res2)):
+    for word in res2[i]:
+        if word.lower() not in sw:
+            Y_set.append(lemmatizer.lemmatize(word.lower()))
+cv=[]
+text1= NER(fullText1)
+for word in text1.ents:
+    cv.append(word.text.lower())
+    print(word.text,word.label_)
+            
+intersection = len(list(set(cv).intersection(Y_set)))
+union = (len(word.text) + len(Y_set)) - intersection
+jacc= float(intersection) / union
+print("%.1f" % (jacc*100) )
