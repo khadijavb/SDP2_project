@@ -36,15 +36,14 @@ for word in res2:
            
 rvector = X_set +Y_set
 for word in rvector:
-	if word in X_set: l1.append(1) 
-	else: l1.append(0)
-	if word in Y_set: l2.append(1)
-	else: l2.append(0)
+ if word in X_set: l1.append(1) # create a vector
+ else: l1.append(0)
+ if word in Y_set: l2.append(1)
+ else: l2.append(0)
 c = 0
 
 # cosine formula
 for i in range(len(rvector)):
-		c+= l1[i]*l2[i]
+  c+= l1[i]*l2[i]
 cosine = c / float((sum(l1)*sum(l2))**0.5)
 print("similarity:", "%.1f" % (cosine*100))
-            
