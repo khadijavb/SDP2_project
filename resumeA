@@ -1,49 +1,48 @@
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 import docx
 import nltk
+import re
 import numpy as np
 import pypandoc
-from nltk.stem import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
 docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
 output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
 assert output == ""
 f = open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r")
 fullText1= f.read()
+
 res1 = nltk.word_tokenize(fullText1.replace(".","").replace(",",""))
-
-docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d2.docx'
-output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test2.txt")
-assert output == ""
-f = open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r")
-fullText2= f.read()
-res2 = nltk.word_tokenize(fullText2.replace(".","").replace(",",""))
-
-sw = stopwords.words('english')
-l1 =[]; l2 =[]
-X_set=[]; Y_set=[]
-
-for word in res1:
-    if word.lower() not in sw:
-        X_set.append(lemmatizer.lemmatize(word.lower()))
+stopWords = set(stopwords.words("english")) 
+freqTable = dict() 
+for word in res1: 
+    word = word.lower() 
+    if word in stopWords: 
+        continue
+    if word in freqTable: 
+        freqTable[word] += 1
+    else: 
+        freqTable[word] = 1
 
 
-for word in res2:
-    if word.lower() not in sw:
-        Y_set.append(lemmatizer.lemmatize(word.lower()))
-            
-           
-rvector = X_set +Y_set
-for word in rvector:
- if word in X_set: l1.append(1) # create a vector
- else: l1.append(0)
- if word in Y_set: l2.append(1)
- else: l2.append(0)
-c = 0
+sentences = sent_tokenize(fullText1) 
+sentenceValue = dict() 
+for sentence in sentences: 
+    for word, freq in freqTable.items(): 
+        if word in sentence.lower(): 
+            if sentence in sentenceValue: 
+                sentenceValue[sentence] += freq 
+            else: 
+                sentenceValue[sentence] = freq 
 
-# cosine formula
-for i in range(len(rvector)):
-  c+= l1[i]*l2[i]
-cosine = c / float((sum(l1)*sum(l2))**0.5)
-print("similarity:", "%.1f" % (cosine*100))
+sumValues = 0
+for sentence in sentenceValue: 
+    sumValues += sentenceValue[sentence] 
+
+average = int(sumValues / len(sentenceValue)) 
+
+summary = '' 
+for sentence in sentences: 
+    if (sentence in sentenceValue) and (sentenceValue[sentence] > (1.2 * average)): 
+        summary += " " + sentence 
+
+print(summary)
