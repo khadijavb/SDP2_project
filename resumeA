@@ -1,4 +1,34 @@
-import re
+import spacy
+import docx2txt
+
+
+nlp = spacy.load('en_core_web_lg')
+
+def extract_fields(cv):
+    doc = nlp(cv)
+    name = None
+    email = None
+    phone_number = None
+    skills = []
+    experience = []
+    education = []
+    
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            name = ent.text
+        elif ent.label_ == "EMAIL":
+            email = ent.text
+        elif ent.label_ == "PHONE":
+            phone_number = ent.text
+        elif ent.label_ == "SKILL":
+            skills.append(ent.text)
+        elif ent.label_ == "EXPERIENCE":
+            experience.append(ent.text)
+        elif ent.label_ == "EDUCATION":
+            education.append(ent.text)
+    
+    return {'name': name, 'email': email, 'phone_number': phone_number, 
+            'skills': skills, 'experience': experience, 'education': education}
 
 cv_text = '''
 John Doe
@@ -28,45 +58,6 @@ Project Manager, DEF Agency, Jan 2018 - May 2020
 - Led cross-functional teams to deliver projects on time and within budget
 - Managed project scope, schedule, and resources
 '''
+fields = extract_fields(cv_text)
 
-name_regex = r"([A-Z][a-z]+(?: [A-Z][a-z]+)*)"
-email_regex = r"[\w\.-]+@[\w\.-]+\.\w+"
-phone_regex = r"\d{3}-\d{3}-\d{4}"
-degree_regex = r"([Bb]achelor|[Mm]aster) of ([A-Za-z]+) in ([A-Za-z]+), ([A-Za-z]+(?: [A-Za-z]+)*), [A-Za-z]+ (\d{4})-(\d{4})"
-job_regex = r"([A-Za-z ]+), ([A-Za-z ]+), ([A-Za-z]+(?: [A-Za-z]+)*), \b(\d{4})-(present|\d{4})\b"
-skill_regex = r"([A-Za-z ]+): ([A-Za-z, ]+)"
-
-with open('C:/Users/ACER PREDATOR/Desktop/test.txt', 'r') as f:
-    requirements = [line.strip() for line in f.readlines()]
-
-
-name = re.findall(name_regex, cv_text)[0]
-email = re.findall(email_regex, cv_text)[0]
-#phone = re.findall(phone_regex, cv_text)[0]
-degrees = re.findall(degree_regex, cv_text)
-jobs = re.findall(job_regex, cv_text)
-skills = re.findall(skill_regex, cv_text)
-
-matched_degrees = [degree for degree in degrees if any(keyword in degree[2] for keyword in requirements)]
-matched_jobs = [job for job in jobs if any(keyword in job[0] or keyword in job[2] for keyword in requirements)]
-matched_skills = [skill for skill in skills if any(keyword in skill[1] for keyword in requirements)]
-
-
-if matched_degrees:
-    print("Matched degrees:")
-    for degree in matched_degrees:
-        print(f"- {degree[0]} of {degree[1]} in {degree[2]}, {degree[3]}, {degree[4]}-{degree[5]}")
-else:
-    print("No matched degrees found.")
-if matched_jobs:
-    print("Matched jobs:")
-    for job in matched_jobs:
-        print(f"- {job[0]} at {job[1]}, {job[2]}, {job[3]}-{job[4]}")
-else:
-    print("No matched jobs found.")
-if matched_skills:
-    print("Matched skills:")
-    for skill in matched_skills:
-        print(f"- {skill[0]}: {skill[1]}")
-else:
-    print("No matched skills")
+print(fields)
