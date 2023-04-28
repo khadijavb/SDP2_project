@@ -1,46 +1,58 @@
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-import docx
-import nltk
-import numpy as np
-import pypandoc  
-lemmatizer = WordNetLemmatizer()
-
 import spacy
-from spacy import displacy
-NER = spacy.load("en_core_web_sm")
+from spacy.matcher import Matcher
 
-docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
-output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
-assert output == ""
-f = open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r")
-fullText1= f.read()
+nlp = spacy.load('en_core_web_lg')
 
+email_pattern = [{'LIKE_EMAIL': True}]
+phone_pattern = [{'TEXT': {'REGEX': '^\\\\(?\\\\d{3}\\\\)?[.-]?\\\\d{3}[.-]?\\\\d{4}$'}}]
+name_pattern = [{'POS': 'PROPN'}, {'POS': 'PROPN'}]
+address_pattern = [{'TEXT': {'REGEX': '^[0-9]+\\\\s[A-z]+\\\\s[A-z]+'}}, {'IS_PUNCT': True}, {'TEXT': {'REGEX': '^[A-z]+,[A-z]{2,}$'}}]
+education_pattern = [{'LOWER': {'IN': ['education', 'qualifications', 'certifications', 'courses', 'degree']}}]
 
-doc2 = docx.Document("C:/Users/ACER PREDATOR/Desktop/d2.docx")
-fullText2 = []
-for para in doc2.paragraphs:
-  fullText2.append(para.text.replace(".","").replace(",",""))
-res2 = [sub.split() for sub in fullText2]
+experience_pattern = [{'LOWER': {'IN': ['work', 'experience', 'employment', 'career']}}]
+matcher = Matcher(nlp.vocab)
+matcher.add('EMAIL', None, email_pattern)
+matcher.add('NAME', None, name_pattern)
+matcher.add('ADDRESS', None, address_pattern)
+matcher.add('EDUCATION', None, education_pattern)
+matcher.add('EXPERIENCE', None, experience_pattern)
 
-# sw contains the list of stopwords
-sw = stopwords.words('english')
-l1 =[]; l2 =[]
-X_set=[]; Y_set=[]
-# remove stop words from the string
+cv_text = '''
+John Doe
+123 Main Street
+Anytown, USA 12345
+johndoe@email.com
+(555) 555-5555
 
-for i in range(len(res2)):
-    for word in res2[i]:
-        if word.lower() not in sw:
-            Y_set.append(lemmatizer.lemmatize(word.lower()))
-cv=[]
-text1= NER(fullText1)
-for word in text1.ents:
-    cv.append(word.text.lower())
-    print(word.text,word.label_)
-            
-intersection = len(list(set(cv).intersection(Y_set)))
-union = (len(word.text) + len(Y_set)) - intersection
-jacc= float(intersection) / union
-print("%.1f" % (jacc*100) )
+Skills
+- Python
+- Java
+- C++
+- Machine learning
+- Data analysis
+- Project management
+
+Experience
+Software Engineer, XYZ Company, Jan 2022 - Present
+- Developed and maintained web applications using Python and Django
+- Implemented machine learning models to improve data analysis processes
+
+Data Analyst, ABC Corporation, Jun 2020 - Dec 2021
+- Analyzed customer data to identify trends and opportunities
+- Built dashboards and visualizations to communicate insights to stakeholders
+
+Project Manager, DEF Agency, Jan 2018 - May 2020
+- Led cross-functional teams to deliver projects on time and within budget
+- Managed project scope, schedule, and resources
+'''
+
+doc = nlp(cv_text)
+
+matches = matcher(doc)
+
+fields = {}
+for match_id, start, end in matches:
+    field_name = nlp.vocab.strings[match_id]
+    fields[field_name] = doc[start:end].text
+
+print(fields)
