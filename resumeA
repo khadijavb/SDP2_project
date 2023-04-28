@@ -1,72 +1,42 @@
-import re
+def read_experience_lines(filename):
+    experience_lines = []
+    with open(filename) as f:
+        for line in f:
+            if line.strip() == "Experience":
+                # read the next lines until an empty line is encountered
+                next_line = next(f).strip()
+                while next_line != "":
+                    experience_lines.append(next_line)
+                    next_line = next(f).strip()
+                break
+    return experience_lines
 
-cv_text = '''
-John Doe
-123 Main Street
-Anytown, USA 12345
-johndoe@email.com
-(555) 555-5555
+def read_skills_lines(filename):
+    skills_lines = []
+    with open(filename) as f:
+        for line in f:
+            if line.strip() == "Skills":
+                # read the next lines until an empty line is encountered
+                skl_line = next(f).strip()
+                while skl_line != "":
+                    skills_lines.append(skl_line)
+                    skl_line = next(f).strip()
+                break
+    return skills_lines
 
-Skills
-- Python
-- Java
-- C++
-- Machine learning
-- Data analysis
-- Project management
+def read_degree_lines(filename):
+    degree_lines = []
+    with open(filename) as f:
+        for line in f:
+            if line.strip() == "Degree":
+                # read the next lines until an empty line is encountered
+                dgr_line = next(f).strip()
+                while dgr_line != "":
+                    degree_lines.append(dgr_line)
+                    dgr_line = next(f).strip()
+                break
+    return degree_lines
 
-Experience
-Software Engineer, XYZ Company, Jan 2022 - Present
-- Developed and maintained web applications using Python and Django
-- Implemented machine learning models to improve data analysis processes
-
-Data Analyst, ABC Corporation, Jun 2020 - Dec 2021
-- Analyzed customer data to identify trends and opportunities
-- Built dashboards and visualizations to communicate insights to stakeholders
-
-Project Manager, DEF Agency, Jan 2018 - May 2020
-- Led cross-functional teams to deliver projects on time and within budget
-- Managed project scope, schedule, and resources
-'''
-
-name_regex = r"([A-Z][a-z]+(?: [A-Z][a-z]+)*)"
-email_regex = r"[\w\.-]+@[\w\.-]+\.\w+"
-phone_regex = r"\d{3}-\d{3}-\d{4}"
-degree_regex = r"([Bb]achelor|[Mm]aster) of ([A-Za-z]+) in ([A-Za-z]+), ([A-Za-z]+(?: [A-Za-z]+)*), [A-Za-z]+ (\d{4})-(\d{4})"
-job_regex = r"([A-Za-z ]+), ([A-Za-z ]+), ([A-Za-z]+(?: [A-Za-z]+)*), \b(\d{4})-(present|\d{4})\b"
-skill_regex = r"([A-Za-z ]+): ([A-Za-z, ]+)"
-
-with open('C:/Users/ACER PREDATOR/Desktop/test.txt', 'r') as f:
-    requirements = [line.strip() for line in f.readlines()]
-
-
-name = re.findall(name_regex, cv_text)[0]
-email = re.findall(email_regex, cv_text)[0]
-#phone = re.findall(phone_regex, cv_text)[0]
-degrees = re.findall(degree_regex, cv_text)
-jobs = re.findall(job_regex, cv_text)
-skills = re.findall(skill_regex, cv_text)
-
-matched_degrees = [degree for degree in degrees if any(keyword in degree[2] for keyword in requirements)]
-matched_jobs = [job for job in jobs if any(keyword in job[0] or keyword in job[2] for keyword in requirements)]
-matched_skills = [skill for skill in skills if any(keyword in skill[1] for keyword in requirements)]
-
-
-if matched_degrees:
-    print("Matched degrees:")
-    for degree in matched_degrees:
-        print(f"- {degree[0]} of {degree[1]} in {degree[2]}, {degree[3]}, {degree[4]}-{degree[5]}")
-else:
-    print("No matched degrees found.")
-if matched_jobs:
-    print("Matched jobs:")
-    for job in matched_jobs:
-        print(f"- {job[0]} at {job[1]}, {job[2]}, {job[3]}-{job[4]}")
-else:
-    print("No matched jobs found.")
-if matched_skills:
-    print("Matched skills:")
-    for skill in matched_skills:
-        print(f"- {skill[0]}: {skill[1]}")
-else:
-    print("No matched skills")
+read_experience_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
+#read_degree_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
+#read_skills_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
