@@ -1,63 +1,12 @@
+import nltk
 import spacy
-import docx2txt
-
-
-nlp = spacy.load('en_core_web_lg')
-
-def extract_fields(cv):
-    doc = nlp(cv)
-    name = None
-    email = None
-    phone_number = None
-    skills = []
-    experience = []
-    education = []
-    
-    for ent in doc.ents:
-        if ent.label_ == "PERSON":
-            name = ent.text
-        elif ent.label_ == "EMAIL":
-            email = ent.text
-        elif ent.label_ == "PHONE":
-            phone_number = ent.text
-        elif ent.label_ == "SKILL":
-            skills.append(ent.text)
-        elif ent.label_ == "EXPERIENCE":
-            experience.append(ent.text)
-        elif ent.label_ == "EDUCATION":
-            education.append(ent.text)
-    
-    return {'name': name, 'email': email, 'phone_number': phone_number, 
-            'skills': skills, 'experience': experience, 'education': education}
-
-cv_text = '''
-John Doe
-123 Main Street
-Anytown, USA 12345
-johndoe@email.com
-(555) 555-5555
-
-Skills
-- Python
-- Java
-- C++
-- Machine learning
-- Data analysis
-- Project management
-
-Experience
-Software Engineer, XYZ Company, Jan 2022 - Present
-- Developed and maintained web applications using Python and Django
-- Implemented machine learning models to improve data analysis processes
-
-Data Analyst, ABC Corporation, Jun 2020 - Dec 2021
-- Analyzed customer data to identify trends and opportunities
-- Built dashboards and visualizations to communicate insights to stakeholders
-
-Project Manager, DEF Agency, Jan 2018 - May 2020
-- Led cross-functional teams to deliver projects on time and within budget
-- Managed project scope, schedule, and resources
-'''
-fields = extract_fields(cv_text)
-
-print(fields)
+import en_core_web_sm
+nlp = en_core_web_sm.load()
+docxFilename = 'C:/Users/ACER PREDATOR/Desktop/d1.docx'
+output = pypandoc.convert_file(docxFilename, 'plain', outputfile="C:/Users/ACER PREDATOR/Desktop/test.txt")
+assert output == ""
+f = open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r")
+fullText1= f.read()
+doc = nlp(fullText1)
+for entity in doc.ents:
+    print(entity.label_, '-', entity.text)
