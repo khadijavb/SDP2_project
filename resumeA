@@ -1,18 +1,16 @@
 import numpy as np
 import pandas as pd
-from nltk import ngrams
+from sklearn.feature_extraction.text import CountVectorizer
+from scipy.spatial.distance import cityblock
+
 with open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r") as f:
     resume = f.read()
 with open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r") as f:
     requirements = f.read()
 
-def dice_coefficient(a, b):
-    intersection = len(a.intersection(b))
-    return (2.0 * intersection) / (len(a) + len(b))
+vectorizer = CountVectorizer()
 
-n = 2
-resume_ngrams = set(ngrams(resume.split(), n))
-requirements_ngrams = set(ngrams(requirements.split(), n))
-similarity_score = dice_coefficient(resume_ngrams, requirements_ngrams)
-
-print("Similarity score:", similarity_score*100)
+resume_matrix = vectorizer.fit_transform([resume])
+requirements_matrix = vectorizer.transform([requirements])
+distance = cityblock(resume_matrix.toarray()[0], requirements_matrix.toarray()[0])
+print("Manhattan distance:", distance)
