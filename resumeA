@@ -1,16 +1,17 @@
-import numpy as np
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from scipy.spatial.distance import cityblock
-
 with open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r") as f:
     resume = f.read()
 with open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r") as f:
     requirements = f.read()
+    
+def hamming_distance(s1, s2):
+    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
 
-vectorizer = CountVectorizer()
+if len(resume) > len(requirements):
+    max_len = len(resume)
+    requirements += ' ' * (max_len - len(requirements))
+else:
+    max_len = len(requirements)
+    resume += ' ' * (max_len - len(resume))
 
-resume_matrix = vectorizer.fit_transform([resume])
-requirements_matrix = vectorizer.transform([requirements])
-distance = cityblock(resume_matrix.toarray()[0], requirements_matrix.toarray()[0])
-print("Manhattan distance:", distance)
+distance = hamming_distance(resume, requirements) / max_len
+print(f"The normalized Hamming distance between the resume and requirements is: {distance}")
