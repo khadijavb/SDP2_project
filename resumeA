@@ -1,50 +1,18 @@
-import spacy
-from spacy import displacy
-NER = spacy.load('en_core_web_lg')
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-import docx
-import nltk
 import numpy as np
-import pypandoc  
-lemmatizer = WordNetLemmatizer()
+import pandas as pd
+from nltk import ngrams
+with open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r") as f:
+    resume = f.read()
+with open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r") as f:
+    requirements = f.read()
 
-def read_experience_lines(filename):
-    experience_lines = []
-    with open(filename) as f:
-        for line in f:
-            if line.strip() == "Experience":
-                # read the next lines until an empty line is encountered
-                next_line = next(f).strip()
-                while next_line != "":
-                    experience_lines.append(next_line)
-                    next_line = next(f).strip()
-                break
-    return experience_lines
+def dice_coefficient(a, b):
+    intersection = len(a.intersection(b))
+    return (2.0 * intersection) / (len(a) + len(b))
 
-ex=read_experience_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
+n = 2
+resume_ngrams = set(ngrams(resume.split(), n))
+requirements_ngrams = set(ngrams(requirements.split(), n))
+similarity_score = dice_coefficient(resume_ngrams, requirements_ngrams)
 
-sw = stopwords.words('english')
-X_set=[]; 
-
-res = [sub.split() for sub in ex]
-
-# remove stop words from the string
-for i in range(len(res)):
-    for word in res[i]:
-        if word.lower() not in sw:
-            X_set.append(lemmatizer.lemmatize(word.lower()))
-            
-X_set = list(map(lambda x: x.replace('.', ' '),X_set ))
-X_set = list(map(lambda x: x.replace(',', ' '),X_set ))
-
-ex_str=" ".join(X_set)
-cv=[]
-text1= NER(ex_str)
-for word in text1.ents:
-    cv.append(word.text.lower())
-    print(word.text,word.label_)
-
-#read_degree_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
-#read_skills_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
+print("Similarity score:", similarity_score*100)
