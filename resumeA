@@ -1,3 +1,15 @@
+import spacy
+from spacy import displacy
+NER = spacy.load('en_core_web_lg')
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import docx
+import nltk
+import numpy as np
+import pypandoc  
+lemmatizer = WordNetLemmatizer()
+
 def read_experience_lines(filename):
     experience_lines = []
     with open(filename) as f:
@@ -11,32 +23,28 @@ def read_experience_lines(filename):
                 break
     return experience_lines
 
-def read_skills_lines(filename):
-    skills_lines = []
-    with open(filename) as f:
-        for line in f:
-            if line.strip() == "Skills":
-                # read the next lines until an empty line is encountered
-                skl_line = next(f).strip()
-                while skl_line != "":
-                    skills_lines.append(skl_line)
-                    skl_line = next(f).strip()
-                break
-    return skills_lines
+ex=read_experience_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
 
-def read_degree_lines(filename):
-    degree_lines = []
-    with open(filename) as f:
-        for line in f:
-            if line.strip() == "Degree":
-                # read the next lines until an empty line is encountered
-                dgr_line = next(f).strip()
-                while dgr_line != "":
-                    degree_lines.append(dgr_line)
-                    dgr_line = next(f).strip()
-                break
-    return degree_lines
+sw = stopwords.words('english')
+X_set=[]; 
 
-read_experience_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
+res = [sub.split() for sub in ex]
+
+# remove stop words from the string
+for i in range(len(res)):
+    for word in res[i]:
+        if word.lower() not in sw:
+            X_set.append(lemmatizer.lemmatize(word.lower()))
+            
+X_set = list(map(lambda x: x.replace('.', ' '),X_set ))
+X_set = list(map(lambda x: x.replace(',', ' '),X_set ))
+
+ex_str=" ".join(X_set)
+cv=[]
+text1= NER(ex_str)
+for word in text1.ents:
+    cv.append(word.text.lower())
+    print(word.text,word.label_)
+
 #read_degree_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
 #read_skills_lines("C:/Users/ACER PREDATOR/Desktop/test.txt")
