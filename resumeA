@@ -1,17 +1,102 @@
-with open("C:/Users/ACER PREDATOR/Desktop/test.txt", "r") as f:
-    resume = f.read()
-with open("C:/Users/ACER PREDATOR/Desktop/test2.txt", "r") as f:
-    requirements = f.read()
+import docx2txt
+import spacy
+import re
+import docx
+import os
+
+nlp = spacy.load("en_core_web_lg")
+
+phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
+email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
+
+
+doc = docx.Document("C:/Users/User/Desktop/skills_db.docx")
+skills_list = []
+
+
+for para in doc.paragraphs:
+    skills = para.text.split(",")
+    skills_list.extend([skill.strip() for skill in skills if skill.strip()])
     
-def hamming_distance(s1, s2):
-    return sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
+experience_pattern = re.compile(r"\b\d+\b\s+(?:years?|yrs?)\b")
+education_pattern = re.compile(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+))[\n\s]+([A-Z][a-z]+(?:\s[A-Z][a-z]+))(?:[\n\s]+[A-Z]{2}[\n\s]+)")
+language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|Korean)\b', re.IGNORECASE)
+job_title_pattern = r"\b(\w+\s)*(manager|director|engineer|analyst|specialist|consultant|coordinator)\b"
 
-if len(resume) > len(requirements):
-    max_len = len(resume)
-    requirements += ' ' * (max_len - len(requirements))
-else:
-    max_len = len(requirements)
-    resume += ' ' * (max_len - len(resume))
+def extract_info(resume_text, skills_list):
+    doc = nlp(resume_text)
+    
+    name = None
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            name = ent.text
+            break
 
-distance = hamming_distance(resume, requirements) / max_len
-print(f"The normalized Hamming distance between the resume and requirements is: {distance}")
+    phone_number = None
+    for match in re.findall(phone_pattern, resume_text):
+        phone_number = match
+        break
+
+    email = None
+    for match in re.findall(email_pattern, resume_text):
+        email = match
+        break
+
+    skills = []
+    for skill in skills_list:
+        if skill.lower() in resume_text.lower():
+            skills.append(skill.lower())
+    skills = list(set(skills))
+    
+    experience = []
+    for match in re.findall(experience_pattern, resume_text):
+        experience.append(match)
+        break
+        
+    job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
+    for title in job_titles:
+        experience.append(''.join(filter(None, title)))
+
+    education = []
+    for match in re.findall(education_pattern, resume_text):
+        education.append(match[0] + ' ' + match[1])
+
+    if not education:
+        lines = resume_text.split('\n')
+        for line in lines:
+            if 'degree' in line.lower() or 'university' in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
+                education.append(line.strip())
+                
+    
+    languages = []       
+    for match in re.findall(language_pattern, resume_text):
+        languages.append(match)
+    
+  
+        
+    return {
+        "name": name,
+        "phone_number": phone_number,
+        "email": email,
+        "skills": skills,
+        "experience": experience,
+        "education": education,
+        "languages": languages,
+    }
+
+
+
+folder_path = "C:/Users/User/Desktop/resumes"
+
+
+for filename in os.listdir(folder_path):
+    file_path = os.path.join(folder_path, filename)
+    
+    if filename.endswith(".docx"):
+        resume_text = docx2txt.process(file_path)
+        info = extract_info(resume_text, skills_list)
+        
+        
+        print("Resume:", filename)
+        print(info)
+        print()
