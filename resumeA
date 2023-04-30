@@ -24,7 +24,6 @@ skills_list = ['java', 'c++', 'javascript','php','ruby', 'html', 'css', 'react',
 
 def extract_sec_info(resume_text, skills_list):
     doc = nlp(resume_text)
-    
     name = None
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -47,10 +46,8 @@ def extract_sec_info(resume_text, skills_list):
         "email": email,
         } 
 
-
 def extract_info(resume_text, skills_list):
     doc = nlp(resume_text)
-
     skills = []
     for skill in skills_list:
         if skill.lower() in resume_text.lower():
@@ -62,28 +59,29 @@ def extract_info(resume_text, skills_list):
         years_of_experience = match.group(1)
         field = match.group(2)
         experience_str = f"{years_of_experience} years of experience in {field}"
-        experience.append(experience_str.replace('\xa0', ''))
+        experience.append(experience_str.replace('\xa0', '').lower())
+
 
     job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
     for title in job_titles:
-        experience.append(''.join(filter(None, title)))
+        experience.append(''.join(filter(None, title)).lower())
 
     education = []
     for match in re.findall(education_pattern, resume_text):
-        education.append(match[0] + ' ' + match[1])
+        degree = match[0].lower()
+        institution = match[1].lower()
+        education.append(degree + ' ' + institution)
 
     if not education:
         lines = resume_text.split('\n')
         for line in lines:
             if 'degree' in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
-                education.append(line.strip())
-                
+                education.append(line.strip().lower())
     
     languages = []       
     for match in re.findall(language_pattern, resume_text):
-        languages.append(match)
+        languages.append(match.lower())
     
-  
     my_list=[]
     my_list.extend(skills)
     my_list.extend(experience)
@@ -92,38 +90,26 @@ def extract_info(resume_text, skills_list):
     
     return my_list
 
-def cosine_similarity(info,reqs_list):
-    l1=[]; l2=[]
-    rvector = info +reqs_list
-    for word in rvector:
-        if word in info: l1.append(1) 
-        else: l1.append(0)
-        if word in reqs_list: l2.append(1)
-        else: l2.append(0)
-    c = 0
 
-    for i in range(len(rvector)):
-        c+= l1[i]*l2[i]
-    cosine = c / float((sum(l1)*sum(l2))**0.5)
-    return cosine*100 
 
 folder_path = "C:/Users/User/Desktop/resumes"
 
+
+def dice_coefficient(a, b):
+    intersection = len(set(a) & set(b))
+    union = len(set(a)) + len(set(b))
+    return (2 * intersection) / union if union else 1
+
+
 for filename in os.listdir(folder_path):
     file_path = os.path.join(folder_path, filename)
-    
+ 
     if filename.endswith(".docx"):
         resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
         sec_info=extract_sec_info(resume_text, skills_list)
-        cosine=cosine_similarity(info,reqs_list)
-   
-       
-    print(skills_list)
-    print()
+        similarity=dice_coefficient(info, reqs_list)
+  
     print("Resume:", filename)
-    print(info)
-    print()
-    print(sec_info)
-    print("similarity:", "%.1f" % (cosine))
+    print("similarity:", "%.1f" % (similarity*100))
     print()
