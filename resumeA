@@ -3,8 +3,7 @@ import spacy
 import re
 import docx
 import os
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
+
 nlp = spacy.load("en_core_web_lg")
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
@@ -14,24 +13,27 @@ email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
 doc1 = docx.Document("C:/Users/User/Desktop/req.docx")
 reqs_list=[]
 for para in doc1.paragraphs:
-    print(para.text)
     reqs = para.text.split(",")
-    reqs_list.extend([req.strip() for req in reqs if req.strip()])
-
+    reqs_list.extend([req.strip().replace('\xa0', ' ') for req in reqs if req.strip()])
+   
+print(reqs_list)
+print()
 doc2 = docx.Document("C:/Users/User/Desktop/skills_db.docx")
 skills_list = []
 
+# Iterate through each paragraph in the document
 for para in doc2.paragraphs:
+    #print(para.text)
     skills = para.text.split(",")
+    # Strip whitespace from each skill, remove empty skills and add valid skills to the skills list
     skills_list.extend([skill.strip() for skill in skills if skill.strip()])
     
-experience_pattern = re.compile(r"\b\d+\b\s+(?:years?|yrs?)\b")
+#experience_pattern = re.compile(r"\b\d+\b\s+(?:years?|yrs?)\b")
 education_pattern = re.compile(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+))[\n\s]+([A-Z][a-z]+(?:\s[A-Z][a-z]+))(?:[\n\s]+[A-Z]{2}[\n\s]+)")
 language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|Korean)\b', re.IGNORECASE)
 job_title_pattern = r"\b(\w+\s)*(manager|director|engineer|analyst|specialist|consultant|coordinator)\b"
-years_regex = r'\b\d+\s*(?:years|yrs)\b'
-
-def extract_sec_info(resume_text, skills_list):
+experience_pattern = re.compile(r'(\d+)\s+years?\s+of\s+experience\s+in\s+(.*)', re.IGNORECASE)
+def extract_sec_info(resume_text):
     doc = nlp(resume_text)
     
     name = None
@@ -56,16 +58,24 @@ def extract_sec_info(resume_text, skills_list):
         "email": email,
         } 
 
-def calculate_experience_years(resume_text):
-    total_years = 0
-    matches = re.findall(years_regex, resume_text)
-    for match in matches:
-        year = int(re.search(r'\d+', match).group())
-        total_years += year
-    return total_years
-
 def extract_info(resume_text, skills_list):
     doc = nlp(resume_text)
+    
+    name = None
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            name = ent.text
+            break
+
+    phone_number = None
+    for match in re.findall(phone_pattern, resume_text):
+        phone_number = match
+        break
+
+    email = None
+    for match in re.findall(email_pattern, resume_text):
+        email = match
+        break
 
     skills = []
     for skill in skills_list:
@@ -73,16 +83,13 @@ def extract_info(resume_text, skills_list):
             skills.append(skill.lower())
     skills = list(set(skills))
     
-    experience = []  
-   # for match in re.findall(experience_pattern, resume_text):
-       # experience.append(match)
-       # break
-    
-    job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
-    for title in job_titles:
-        experience.append(''.join(filter(None, title)))
-    experience.append(str(calculate_experience_years(resume_text))+ " years")
-    
+    experience = []
+    for match in experience_pattern.finditer(resume_text):
+        years_of_experience = match.group(1)
+        field = match.group(2)
+        experience_str = f"{years_of_experience} years of experience in {field}"
+        experience.append(experience_str.replace('\xa0', ''))
+
     education = []
     for match in re.findall(education_pattern, resume_text):
         education.append(match[0] + ' ' + match[1])
@@ -90,7 +97,7 @@ def extract_info(resume_text, skills_list):
     if not education:
         lines = resume_text.split('\n')
         for line in lines:
-            if 'degree' in line.lower() or 'university' in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
+            if 'degree'  in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
                 education.append(line.strip())
                 
     
@@ -112,17 +119,26 @@ def extract_info(resume_text, skills_list):
 folder_path = "C:/Users/User/Desktop/resumes"
 
 
+def jaccard_similarity(set1, set2):
+    intersection = len(set1.intersection(set2))
+    union = len(set1.union(set2))
+    similarity = intersection / union
+    return similarity
+
 for filename in os.listdir(folder_path):
     file_path = os.path.join(folder_path, filename)
     
     if filename.endswith(".docx"):
         resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
-        sec_info=extract_sec_info(resume_text, skills_list)
-      
+        sec_info=extract_sec_info(resume_text)
+        req_set=set(reqs_list)
+        info_set=set(info)
+        similarity=jaccard_similarity(info_set, req_set)
         
         print("Resume:", filename)
+        print(sec_info)
         print(info)
         print()
-        print(sec_info)
+        print("similarity", similarity*100)
         print()
