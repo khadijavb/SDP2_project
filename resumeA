@@ -3,7 +3,8 @@ import spacy
 import re
 import docx
 import os
-
+import numpy as np
+from scipy.spatial.distance import canberra
 nlp = spacy.load("en_core_web_lg")
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
@@ -91,25 +92,33 @@ def extract_info(resume_text, skills_list):
     return my_list
 
 
-
 folder_path = "C:/Users/User/Desktop/resumes"
 
-
-def dice_coefficient(a, b):
-    intersection = len(set(a) & set(b))
-    union = len(set(a)) + len(set(b))
-    return (2 * intersection) / union if union else 1
-
+def hamming_distance(list1, list2):
+    distance = 0
+    for i in range(len(list1)):
+        if list1[i] != list2[i]:
+            distance += 1
+    return distance
 
 for filename in os.listdir(folder_path):
     file_path = os.path.join(folder_path, filename)
- 
+    
     if filename.endswith(".docx"):
         resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
         sec_info=extract_sec_info(resume_text, skills_list)
-        similarity=dice_coefficient(info, reqs_list)
-  
+       
+       
+
+    if len(info) > len(reqs_list):
+        max_len = len(info)
+        reqs_list += ' ' * (max_len - len(reqs_list))
+    else:
+        max_len = len(reqs_list)
+        info += ' ' * (max_len - len(info))
+
+    distance = hamming_distance(info, reqs_list)
     print("Resume:", filename)
-    print("similarity:", "%.1f" % (similarity*100))
+    print("similarity:", "%.1f" % (distance))
     print()
