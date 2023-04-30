@@ -3,18 +3,25 @@ import spacy
 import re
 import docx
 import os
-
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
 nlp = spacy.load("en_core_web_lg")
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
 
 
-doc = docx.Document("C:/Users/User/Desktop/skills_db.docx")
+doc1 = docx.Document("C:/Users/User/Desktop/req.docx")
+reqs_list=[]
+for para in doc1.paragraphs:
+    print(para.text)
+    reqs = para.text.split(",")
+    reqs_list.extend([req.strip() for req in reqs if req.strip()])
+
+doc2 = docx.Document("C:/Users/User/Desktop/skills_db.docx")
 skills_list = []
 
-
-for para in doc.paragraphs:
+for para in doc2.paragraphs:
     skills = para.text.split(",")
     skills_list.extend([skill.strip() for skill in skills if skill.strip()])
     
@@ -22,8 +29,9 @@ experience_pattern = re.compile(r"\b\d+\b\s+(?:years?|yrs?)\b")
 education_pattern = re.compile(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+))[\n\s]+([A-Z][a-z]+(?:\s[A-Z][a-z]+))(?:[\n\s]+[A-Z]{2}[\n\s]+)")
 language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|Korean)\b', re.IGNORECASE)
 job_title_pattern = r"\b(\w+\s)*(manager|director|engineer|analyst|specialist|consultant|coordinator)\b"
+years_regex = r'\b\d+\s*(?:years|yrs)\b'
 
-def extract_info(resume_text, skills_list):
+def extract_sec_info(resume_text, skills_list):
     doc = nlp(resume_text)
     
     name = None
@@ -41,6 +49,23 @@ def extract_info(resume_text, skills_list):
     for match in re.findall(email_pattern, resume_text):
         email = match
         break
+    
+    return {
+        "name": name,
+        "phone_number": phone_number,
+        "email": email,
+        } 
+
+def calculate_experience_years(resume_text):
+    total_years = 0
+    matches = re.findall(years_regex, resume_text)
+    for match in matches:
+        year = int(re.search(r'\d+', match).group())
+        total_years += year
+    return total_years
+
+def extract_info(resume_text, skills_list):
+    doc = nlp(resume_text)
 
     skills = []
     for skill in skills_list:
@@ -48,15 +73,16 @@ def extract_info(resume_text, skills_list):
             skills.append(skill.lower())
     skills = list(set(skills))
     
-    experience = []
-    for match in re.findall(experience_pattern, resume_text):
-        experience.append(match)
-        break
-        
+    experience = []  
+   # for match in re.findall(experience_pattern, resume_text):
+       # experience.append(match)
+       # break
+    
     job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
     for title in job_titles:
         experience.append(''.join(filter(None, title)))
-
+    experience.append(str(calculate_experience_years(resume_text))+ " years")
+    
     education = []
     for match in re.findall(education_pattern, resume_text):
         education.append(match[0] + ' ' + match[1])
@@ -73,16 +99,13 @@ def extract_info(resume_text, skills_list):
         languages.append(match)
     
   
-        
-    return {
-        "name": name,
-        "phone_number": phone_number,
-        "email": email,
-        "skills": skills,
-        "experience": experience,
-        "education": education,
-        "languages": languages,
-    }
+    my_list=[]
+    my_list.extend(skills)
+    my_list.extend(experience)
+    my_list.extend(education)
+    my_list.extend(languages)
+    
+    return my_list
 
 
 
@@ -95,8 +118,11 @@ for filename in os.listdir(folder_path):
     if filename.endswith(".docx"):
         resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
-        
+        sec_info=extract_sec_info(resume_text, skills_list)
+      
         
         print("Resume:", filename)
         print(info)
+        print()
+        print(sec_info)
         print()
