@@ -1,0 +1,52 @@
+<style>
+    	#logo{
+
+    	}
+
+    	body{
+    		background-color: #FFFFFF;
+
+    	}
+
+        .navbar-custom {
+            background-color: #F5F5F5;
+        }
+
+        .navbar-brand {
+        	font-family: CocoSharp,Arial;
+        }
+        .gradient-custom-2 {
+			background: #FF5F1F;
+		}
+		.mb-4 {
+			text-align: center;
+			font-family: CocoSharp,Arial;
+
+		}
+		.center {
+  			display: block;
+  			margin-left: auto;
+  			margin-right: auto;
+  			margin-top: 10px;
+  			block-size: 300px;
+		}
+		.form-label {
+			margin-right: 220px;
+		}
+
+		
+
+
+@media (min-width: 768px) {
+.gradient-form {
+height: 100vh !important;
+}
+}
+@media (min-width: 769px) {
+.gradient-custom-2 {
+border-top-right-radius: .3rem;
+border-bottom-right-radius: .3rem;
+}
+}
+
+    </style>

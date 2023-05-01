@@ -1,0 +1,135 @@
+{% load static %}
+
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resume Analyzer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel = "icon" href = "https://unibank.az/assets/images/logonew-orange1.png" 
+        type = "image/x-icon">
+  <link rel="stylesheet" type="text/css" href="{% static '/css/main.css' %}">
+    
+</head>
+<body>
+
+<section class="h-100 gradient-form" style="background-color: #FFFFFF;">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100 slide-in">
+      <div class="col-xl-10">
+        <div class="card rounded-3 text-black">
+          <div class="row g-0">
+            <div class="col-lg-6">
+              <div class="card-body p-md-5 mx-md-4">
+
+                <div class="text-center">
+                  <img src="{% static 'images/mylogo.png' %}"
+                    style="width: 185px;" alt="logo">
+                  <h4 class="mt-1 mb-5 pb-1"></h4>
+                </div>
+
+                <form method="POST" action="">
+                	{% csrf_token %}
+                  <p style="text-align: center; color:#FF5F1F">Registration form</p>
+
+                  <p style="text-align: left; color:#FF5F1F">Username</p>
+
+
+
+                  <div class="form-outline mb-4" style="text-align: left;">
+                  	{{form.username}}
+                  </div>
+
+                  <p style="text-align: left; color:#FF5F1F">Email address</p>
+         
+				  <div class="form-outline mb-4" style = "text-align: left;">
+                    {{form.email}}
+				  </div>
+
+				  <p style="text-align: left; color:#FF5F1F">Password</p>
+
+                  <div class="form-outline mb-4" style = "text-align: left;">
+                  	{{form.password1}}
+                  </div>
+
+                  <p style="text-align: left; color:#FF5F1F">Password confirmation</p>
+
+                  <div class="form-outline mb-4" style = "text-align: left;">
+                  	{{form.password2}}
+                  </div>
+
+            
+
+                  {{form.errors}}
+                  
+                   <div class="text-center">
+                      <button type="submit" class="btn btn-primary" style="background-color: #FF5F1F;">Register</button>
+                    </div>
+                  <br>
+                  <a class="mb-0 me-2" style="margin-right: 10px;">Already have an accoun?</a>
+                  <a type="button" class="btn btn-outline-danger" style="background-color: #FF5F1F; color: #FFFFFF; margin-left: 200px; position: relative;  bottom: 30px;" href="{% url 'login' %}">Log In</a>
+                  
+                </form>
+
+              </div>
+            </div>
+            <div class="col-lg-6 d-flex align-items-center gradient-custom-2">
+              <div class="text-white px-3 py-4 p-md-5 mx-md-4">
+                <h2 class="mb-4 fade-in">Welcome to Resume Analyzer</h2>
+                <p class="small mb-0 fade-in">This web application is devoted for saving your time and getting more efficient results. The developers of this app worked hard to bring you convinience during job application period.</p>
+                <img src="https://cdn-fdoko.nitrocdn.com/LDenJLyGpzBiVQHQVhcPIGZAevqRftdO/assets/static/optimized/rev-6162852/wp-content/uploads/2020/10/Recume-review.png" alt="Girl in a jacket" class="center fade-in">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+						
+		var form_fields = document.getElementsByTagName('input')
+		form_fields[1].placeholder='Username..';
+		form_fields[2].placeholder='Email..';
+		form_fields[3].placeholder='Enter Password...';
+		form_fields[4].placeholder='Re-enter Password...';
+
+
+		for (var field in form_fields){	
+			form_fields[field].className += ' form-control'
+		}
+
+	</script>
+</section>
+<style>
+  .fade-in {
+  opacity: 0;
+  animation: fadeIn 2.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.slide-in {
+  transform: translateY(-100%);
+  animation: slideIn 1s ease-out forwards;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+</style>
+
+</body>
+
+</html>

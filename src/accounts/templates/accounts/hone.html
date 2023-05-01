@@ -1,0 +1,224 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+
+
+   
+  <style>
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 1.0s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      0% {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .slide-in {
+      animation: slideIn 1.0s ease-out;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #F5F5F5;
+    }
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+    .content {
+      padding-top: 30px;
+      color: #FF5F1F;
+    }
+    .requirements label {
+      color: #F5F5F5;
+    }
+
+    .requirements textarea {
+      height: 150px;
+    }
+
+    .file-field label {
+      color: #F5F5F5;
+    }
+    
+    #uploadForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+      background-color: #FF5F1F;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+
+    }
+
+    .file-field, .requirements {
+      width: 48%;
+    }
+
+    .file-field input, .requirements textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 5px;
+      background-color: #F5F5F5;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .file-field input:focus, .requirements textarea:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 3px rgba(52, 152, 219, 0.5);
+    }
+
+    .submit-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #fefefe;
+      border: 1px solid #888;
+      border-radius: 5px;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .submit-btn:hover {
+      background-color: #6c757d;
+    }
+    
+    #progressContainer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      text-align: center; 
+    }
+
+    #progressContainer h3 {
+      margin: 0; 
+    }
+    .progress-bar {
+      background-color: #4CBB17;
+    }
+    .file-field-description {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #F5F5F5;
+    }
+
+      #uploadForm {
+        margin-bottom: 90px;
+      }
+
+  </style>
+
+  <h2 class="content fade-in">Upload Resumes</h2>
+  <form id="uploadForm" class="slide-in" method="POST" enctype="multipart/form-data" action="{% url 'index' %}">
+    {% csrf_token %}
+    <div class="form-container">
+      <div class="file-field">
+        {{ form.file_field.label_tag }}
+        {{ form.file_field }}
+        <p class="file-field-description">
+          Select at least one .docx file
+        </p>
+      </div>
+      <div class="requirements">
+        {{ form.requirements.label_tag }}
+        {{ form.requirements }}
+        <p class="file-field-description">
+          Important: split the requirements with ',' and ensure that spelling is correct
+        </p>
+      </div>
+    </div>
+    <button class="submit-btn" type="submit" style="color: #FF5F1F;">Compare</button>
+  </form>
+
+  <div id="progressContainer" style="display: none;">
+    <h3>Loading...</h3>
+    <div class="progress">
+      <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+</div>
+
+  </div>
+  <script>
+    document.getElementById("uploadForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      document.getElementById("progressContainer").style.display = "block";
+      this.submit();
+      let progress = 0;
+      const interval = setInterval(function () {
+        progress += 10;
+        document.getElementById("progressBar").style.width = progress + "%";
+        document.getElementById("progressBar").textContent = progress + "%";
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 300); 
+    });
+  </script>
+  {% block footer %}
+  </style>
+
+<footer class="footer">
+  <div class="container text-center">
+    <p>&copy; {{ current_year }} Resume Analyzer. All Rights Reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background-color: #46464e;
+    padding: 20px;
+    margin-top: 40px;
+    border-top: 1px solid #e9ecef;
+  }
+  footer p {
+        color: #FFF;
+        text-decoration: none;
+      }
+</style>
+
+<script>
+  const currentYearElement = document.querySelector(".footer p");
+  const currentYear = new Date().getFullYear();
+  currentYearElement.innerHTML = currentYearElement.innerHTML.replace('{{ current_year }}', currentYear);
+</script>
+{% endblock %}
+{% endblock %}
+
+

@@ -1,0 +1,154 @@
+{% extends 'accounts/main.html' %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% block content %}
+
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+
+    .content-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .container {
+      background-color: #FF5F1F;
+      border-radius: 10px;
+      padding: 20px;
+      animation: slide-in 1.0s ease-out;
+    }
+
+    @keyframes slide-in {
+      0% {
+        opacity: 0;
+        transform: translateY(20%);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      color: #FF5F1F;
+      text-align: center;
+      margin-top: 50px;
+      margin-bottom: 30px;
+      opacity: 0;
+      animation: fade-in 1.0s ease-out forwards;
+    }
+
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-20%);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h3 {
+      color: white;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    h4 {
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      color: black;
+    }
+
+    .clear-history-btn {
+      background-color: white;
+      border: none;
+      color: #FF5F1F;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 16px;
+      margin: 20px 0;
+      border: 1px solid #888;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .clear-history-btn:hover {
+      background-color: #6c757d;
+    }
+    form {
+      text-align: center;
+    }
+    
+  </style>
+
+  <div class="content-container">
+    <h2 id="saved-results-heading">Saved Results</h2>
+    {% for message in messages %}
+  {% if message.tags == 'success' %}
+    <div class="alert alert-success" role="alert">
+      {{ message }}
+    </div>
+  {% endif %}
+{% endfor %}
+
+    <div class="container">
+      {% for date, results in submissions.items %}
+        <h3>{{ date }}:</h3>
+        <h4 style="text-align: center;">Top 3 Resumes</h4>
+        {% for result in results %}
+          <div class="result-card">
+            <p>
+              Level {{ result.level }}:<br>
+              {{ result.filename }} (Score: {{ result.score }})<br>
+              Name: {{ result.name }}<br>
+              Phone Number: {{ result.phone_number }}<br>
+              Email: {{ result.email }}
+            </p>
+          </div>
+        {% endfor %}
+      {% endfor %}
+      
+      <form id="clear-history-form" method="POST" action="{% url 'clear_history' %}">
+  {% csrf_token %}
+  <button id="clear-history-btn" type="submit" class="clear-history-btn">Clear History</button>
+</form>
+    </div>
+  </div>
+<script>
+$(document).ready(function() {
+  $("#clear-history-form").submit(function(event) {
+    event.preventDefault();
+
+    $.ajax({
+      type: "POST",
+      url: "{% url 'clear_history' %}",
+      data: $(this).serialize(),
+      success: function(data) {
+        location.reload();
+      },
+      error: function(xhr, textStatus, errorThrown) {
+        alert("Error clearing history. Please try again.");
+      }
+    });
+  });
+});
+</script>
+
+
+
+{% endblock %}

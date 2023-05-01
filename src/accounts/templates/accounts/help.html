@@ -1,0 +1,113 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+   <section class="pt-5" style="background-color: #f2f2f2;">
+    <div class="container">
+      <h2 class="text-center mb-5 pb-2 fw-bold faq-title">Frequently Asked Questions</h2>
+      <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="far fa-paper-plane pe-2"></i> How do I get started?</h5>
+            <p class="answer">
+              You can either scroll down to see the Start button, or click the Start tab to be redirected to analyzer page.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="ICON_CLASS pe-2"></i>What is included in the evaluation?</h5>
+            <p class="answer">
+              Our evaluation analyzes several aspects of candidates' resume, including name, mail, phone number, skills, experience and more. You'll receive a score and contact information of top 3 Resumes.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="ICON_CLASS pe-2"></i>Are there any in-app purchases?</h5>
+            <p class="answer">
+              Currently, our web application is free of charge, however, future upgrades with paid content are possible.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="ICON_CLASS pe-2"></i>How can I view my history?</h5>
+            <p class="answer">
+              You can view your results history by clicking on History tab button in the menu bar. Please note that you need to save the results, otherwise, data will be lost.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="ICON_CLASS pe-2"></i>Are other languages supported in this app?</h5>
+            <p class="answer">
+              This web application will soon be upgraded to a newer version, thus, more language options will be available!
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="shadow-sm rounded-3 p-3 h-100 faq-box">
+            <h5 class="mb-3 question"><i class="ICON_CLASS pe-2"></i>What if there is a problem or suspicious activity in the account?</h5>
+            <p class="answer">
+              In this case, we offer a help by providing users with our contact information, i.e. mail, phone number.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<style>
+    .faq-title {
+      color: #FF5F1F;
+      font-family: Arial, sans-serif;
+    }
+    .question {
+      color: #FF5F1F;
+    }
+    .answer {
+      color: #000000;
+    }
+    .faq-box {
+    background-color: #F5F5F5;
+    border: none;
+    font-family: Arial, sans-serif;
+    animation: slideIn 1.0s ease-out;
+  }
+
+  @keyframes slideIn {
+      0% {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+
+  <footer class="site-footer">
+    <div class="container text-center">
+      <p>&copy; {{ current_year }} Resume Analyzer. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <style>
+    .site-footer {
+      background-color: #46464e;
+      padding: 20px;
+      margin-top: 0px;
+      border-top: 1px solid #e9ecef;
+    }
+    .site-footer p {
+      color: #FFF;
+      text-decoration: none;
+    }
+  </style>
+
+  <script>
+    const currentYearElement = document.querySelector(".site-footer p");
+    const currentYear = new Date().getFullYear();
+    currentYearElement.innerHTML = currentYearElement.innerHTML.replace('{{ current_year }}', currentYear);
+  </script>
+{% endblock %}

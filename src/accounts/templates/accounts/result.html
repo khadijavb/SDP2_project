@@ -1,0 +1,102 @@
+{% extends 'accounts/main.html' %}
+
+{% block content %}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .results-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .resume-section {
+      background-color: #FF5F1F;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 50px;
+      margin-bottom: 30px;
+      color: #FF5F1F;
+    }
+
+    h3 {
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    .resume-card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .btn-primary {
+      background-color: white;
+      color: #FF5F1F;
+      border: 1px solid #888;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-success {
+      background-color: white;
+      color: #FF5F1F;
+      border: 1px solid #888;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+
+    }
+    .btn-primary:hover,
+    .btn-success:hover {
+      background-color: #6c757d;
+    }
+  </style>
+
+  <div class="results-container">
+    <h2>Top 3 Resumes</h2>
+    
+    {% for resumes in top_resumes %}
+      {% if resumes %}
+        <div class="resume-section">
+          <h3>Level {{ forloop.counter }}:</h3>
+          {% for resume in resumes %}
+            <div class="resume-card">
+              <p>
+                {{ resume.filename }} (Score: {{ resume.score|floatformat:2 }})<br>
+                Name: {{ resume.name }}<br>
+                Phone Number: {{ resume.phone_number }}<br>
+                Email: {{ resume.email }}
+              </p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="btn-container">
+      <form id="saveResultsForm" method="POST" action="{% url 'save_results' %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Save Results</button>
+        <a href="{% url 'index' %}" class="btn btn-primary">Start New Submission</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}
