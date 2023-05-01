@@ -114,7 +114,7 @@
           <div class="result-card">
             <p>
               Level {{ result.level }}:<br>
-              {{ result.filename }} (Score: {{ result.score }})<br>
+              {{ result.filename }} (Score: {{ result.score|floatformat:2 }})<br>
               Name: {{ result.name }}<br>
               Phone Number: {{ result.phone_number }}<br>
               Email: {{ result.email }}
