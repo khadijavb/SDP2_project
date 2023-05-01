@@ -8,9 +8,9 @@ nlp = spacy.load("en_core_web_lg")
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
-experience_pattern = re.compile(r'(\d+)\s+years?\s+of\s+experience\s+in\s+(.*)', re.IGNORECASE)
+experience_pattern = re.compile(r'(\d+)\+?\s*(?:year|yr)s?\s+of\s+experience\s+in\s+(.*)', re.IGNORECASE)
 education_pattern = re.compile(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+))[\n\s]+([A-Z][a-z]+(?:\s[A-Z][a-z]+))(?:[\n\s]+[A-Z]{2}[\n\s]+)")
-language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|Korean)\b', re.IGNORECASE)
+language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|vietnamese|Korean|Hindi|Ukrainian|Bengali)\b', re.IGNORECASE)
 job_title_pattern = r"\b(\w+\s)*(manager|director|engineer|analyst|specialist|consultant|coordinator)\b"
 
 doc1 = docx.Document("C:/Users/User/Desktop/req.docx")
@@ -18,15 +18,12 @@ reqs_list=[]
 for para in doc1.paragraphs:
     reqs = para.text.split(",")
     reqs_list.extend([req.strip().replace('\xa0', ' ').lower() for req in reqs if req.strip()])
-    
-print(reqs_list)
-print()
 
-skills_list = ['java', 'c++', 'javascript', 'html', 'css', 'react', 'node', 'aws', 'bussiness', 'project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts']
+
+skills_list = ['java', 'c++', 'javascript','php','ruby', 'html', 'css', 'react','sql', 'node', 'aws','web development','machine learning','artificial intelligence','composing','first aid',' use and disposal of chemicals', 'business consulting', 'teaching','math','project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts']
 
 def extract_sec_info(resume_text, skills_list):
     doc = nlp(resume_text)
-    
     name = None
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -49,10 +46,8 @@ def extract_sec_info(resume_text, skills_list):
         "email": email,
         } 
 
-
 def extract_info(resume_text, skills_list):
     doc = nlp(resume_text)
-
     skills = []
     for skill in skills_list:
         if skill.lower() in resume_text.lower():
@@ -65,6 +60,7 @@ def extract_info(resume_text, skills_list):
         field = match.group(2)
         experience_str = f"{years_of_experience} years of experience in {field}"
         experience.append(experience_str.replace('\xa0', '').lower())
+
 
     job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
     for title in job_titles:
@@ -98,7 +94,7 @@ def cosine_similarity(info,reqs_list):
     l1=[]; l2=[]
     rvector = info +reqs_list
     for word in rvector:
-        if word in info: l1.append(1) # create a vector 
+        if word in info: l1.append(1) 
         else: l1.append(0)
         if word in reqs_list: l2.append(1)
         else: l2.append(0)
@@ -108,6 +104,9 @@ def cosine_similarity(info,reqs_list):
         c+= l1[i]*l2[i]
     cosine = c / float((sum(l1)*sum(l2))**0.5)
     return cosine*100 
+
+
+
 
 folder_path = "C:/Users/User/Desktop/resumes"
 resume_scores = {}
@@ -119,15 +118,38 @@ for filename in os.listdir(folder_path):
         sec_info=extract_sec_info(resume_text, skills_list)
         cosine=cosine_similarity(info,reqs_list)
         resume_scores[filename] = cosine
-   
-    print()
-    print("Resume:", filename)
-    print(info)
-    print()
-    print(sec_info)
-    print("similarity:", "%.2f" % (cosine))
-    print()
-top_resumes = sorted(resume_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+       
+        
+ 
+
+top_scores = [0.0] * 3
+top_files = [[] for _ in range(3)]
+
+if len(resume_scores) < 3:
+    print("Be careful !!! There are less than 3 resumes.")
+
+for file, score in resume_scores.items():
+    if score > top_scores[0]:
+        top_scores = [score, top_scores[0], top_scores[1]]
+        top_files = [[file], top_files[0], top_files[1]]
+    elif score > top_scores[1]:
+        top_scores = [top_scores[0], score, top_scores[1]]
+        top_files = [top_files[0], [file], top_files[1]]
+    elif score > top_scores[2]:
+        top_scores = [top_scores[0], top_scores[1], score]
+        top_files = [top_files[0], top_files[1], [file]]
+    elif score == top_scores[0]:
+        top_files[0].append(file)
+    elif score == top_scores[1]:
+        top_files[1].append(file)
+    elif score == top_scores[2]:
+        top_files[2].append(file)
+
+
 print("Top 3 Resumes:")
-for resume_file, cosine in top_resumes:
-    print(f"{resume_file}: {cosine:.2f}")
+for i, (score, files) in enumerate(zip(top_scores, top_files)):
+    print(f"Level {i+1}:")
+    for file in files:
+        print(f"{file}: {score:.2f}")
+        sec_info = extract_sec_info(docx2txt.process(os.path.join(folder_path, file)), skills_list)
+        print(f"Name: {sec_info['name']}, Phone: {sec_info['phone_number']}, Email: {sec_info['email']}")
