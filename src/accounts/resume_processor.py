@@ -23,8 +23,8 @@ def process_resumes(file_paths, requirements):
     reqs_list = [req.strip().replace('\xa0', ' ').lower() for req in reqs_list if req.strip()]
 
 
-    skills_list = ['java', 'c++', 'javascript', 'html', 'css', 'react', 'node','ruby','php', 'aws', 'bussiness', 'project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts','marketing','financial analysis','risk management','brand management','advertising','analytical thinking']
-
+    skills_list = ['java', 'c++', 'javascript','php','ruby', 'html', 'css', 'react','sql', 'node', 'aws','web development','machine learning','artificial intelligence','composing','first aid',' use and disposal of chemicals', 'business consulting', 'teaching','math','project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts']
+    
     def extract_sec_info(resume_text, skills_list):
         doc = nlp(resume_text)
         name = None
