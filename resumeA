@@ -3,9 +3,9 @@ import spacy
 import re
 import docx
 import os
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
+
 nlp = spacy.load("en_core_web_lg")
+from nltk.corpus import stopwords
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
@@ -25,6 +25,7 @@ skills_list = ['java', 'c++', 'javascript','php','ruby', 'html', 'css', 'react',
 
 def extract_sec_info(resume_text, skills_list):
     doc = nlp(resume_text)
+    
     name = None
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -47,8 +48,26 @@ def extract_sec_info(resume_text, skills_list):
         "email": email,
         } 
 
+
 def extract_info(resume_text, skills_list):
     doc = nlp(resume_text)
+    
+    name = None
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            name = ent.text
+            break
+
+    phone_number = None
+    for match in re.findall(phone_pattern, resume_text):
+        phone_number = match
+        break
+
+    email = None
+    for match in re.findall(email_pattern, resume_text):
+        email = match
+        break
+
     skills = []
     for skill in skills_list:
         if skill.lower() in resume_text.lower():
@@ -60,29 +79,28 @@ def extract_info(resume_text, skills_list):
         years_of_experience = match.group(1)
         field = match.group(2)
         experience_str = f"{years_of_experience} years of experience in {field}"
-        experience.append(experience_str.replace('\xa0', '').lower())
-
+        experience.append(experience_str.replace('\xa0', ''))
 
     job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
     for title in job_titles:
-        experience.append(''.join(filter(None, title)).lower())
+        experience.append(''.join(filter(None, title)))
 
     education = []
     for match in re.findall(education_pattern, resume_text):
-        degree = match[0].lower()
-        institution = match[1].lower()
-        education.append(degree + ' ' + institution)
+        education.append(match[0] + ' ' + match[1])
 
     if not education:
         lines = resume_text.split('\n')
         for line in lines:
             if 'degree' in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
-                education.append(line.strip().lower())
+                education.append(line.strip())
+                
     
     languages = []       
     for match in re.findall(language_pattern, resume_text):
-        languages.append(match.lower())
+        languages.append(match)
     
+  
     my_list=[]
     my_list.extend(skills)
     my_list.extend(experience)
@@ -91,35 +109,47 @@ def extract_info(resume_text, skills_list):
     
     return my_list
 
+def remove_stopwords(text_list):
+    stop_words = set(stopwords.words('english'))
+    filtered_list = []
+    for text in text_list:
+        words = text.split()
+        filtered_words = [word for word in words if word.lower() not in stop_words]
+        filtered_list.append(" ".join(filtered_words))
+    return filtered_list
+
+
 folder_path = "C:/Users/User/Desktop/resumes"
-
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-import numpy as np
-
-def euclidean_distance(str_list1, str_list2):
-    str_set = set(str_list1 + str_list2)
-
-    label_encoder = LabelEncoder()
-    integer_encoded = label_encoder.fit_transform(list(str_set))
-    onehot_encoder = OneHotEncoder(sparse_output=False, categories='auto')
-    onehot_encoded = onehot_encoder.fit_transform(integer_encoded.reshape(-1, 1))
-    
-    array1 = np.sum(onehot_encoded[label_encoder.transform(str_list1)], axis=0)
-    array2 = np.sum(onehot_encoded[label_encoder.transform(str_list2)], axis=0)
-    
- 
-    distance = np.sqrt(np.sum(np.square(array1 - array2)))
-    
-    return distance
 
 for filename in os.listdir(folder_path):
     file_path = os.path.join(folder_path, filename)
-  
+    
+
     if filename.endswith(".docx"):
         resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
         sec_info=extract_sec_info(resume_text, skills_list)
-        distance = euclidean_distance(info, reqs_list)
-        print("Resume:", filename)
-        print("distance", distance)
-        print()
+        filtered_info=str(remove_stopwords(info))
+        filtered_req=str(remove_stopwords(reqs_list))
+    l1=[]; l2=[]
+    rvector = filtered_info +filtered_req
+    for word in rvector:
+        if word in filtered_info: l1.append(1) 
+        else: l1.append(0)
+        if word in filtered_req: l2.append(1)
+        else: l2.append(0)
+    c = 0
+
+
+    for i in range(len(rvector)):
+        c+= l1[i]*l2[i]
+    cosine = c / float((sum(l1)*sum(l2))**0.5)
+       
+    print(skills_list)
+    print()
+    print("Resume:", filename)
+    print(info)
+    print()
+    print(sec_info)
+    print("similarity:", "%.1f" % (cosine*100))
+    print()
