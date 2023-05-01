@@ -3,14 +3,14 @@ import spacy
 import re
 import docx
 import os
-from nltk.corpus import stopwords
+
 nlp = spacy.load("en_core_web_lg")
 
 phone_pattern = re.compile(r"\b\d{3}\D{0,3}\d{3}\D{0,3}\d{4}\b")
 email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}")
-experience_pattern = re.compile(r'(\d+)\+?\s*(?:year|yr)s?\s+of\s+experience\s+in\s+(.*)', re.IGNORECASE)
+experience_pattern = re.compile(r'(\d+)\s+years?\s+of\s+experience\s+in\s+(.*)', re.IGNORECASE)
 education_pattern = re.compile(r"([A-Z][a-z]+(?:\s[A-Z][a-z]+))[\n\s]+([A-Z][a-z]+(?:\s[A-Z][a-z]+))(?:[\n\s]+[A-Z]{2}[\n\s]+)")
-language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|vietnamese|Korean|Hindi|Ukrainian|Bengali)\b', re.IGNORECASE)
+language_pattern = re.compile(r'\b(?:English|French|German|Spanish|Italian|Portuguese|Russian|Chinese|Japanese|Korean)\b', re.IGNORECASE)
 job_title_pattern = r"\b(\w+\s)*(manager|director|engineer|analyst|specialist|consultant|coordinator)\b"
 
 doc1 = docx.Document("C:/Users/User/Desktop/req.docx")
@@ -18,13 +18,15 @@ reqs_list=[]
 for para in doc1.paragraphs:
     reqs = para.text.split(",")
     reqs_list.extend([req.strip().replace('\xa0', ' ').lower() for req in reqs if req.strip()])
+    
+print(reqs_list)
+print()
 
-
-skills_list = ['java', 'c++', 'javascript','php','ruby', 'html', 'css', 'react','sql', 'node', 'aws','web development','machine learning','artificial intelligence','composing','first aid',' use and disposal of chemicals', 'business consulting', 'teaching','math','project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts']
-
+skills_list = ['java', 'c++', 'javascript', 'html', 'css', 'react', 'node', 'aws', 'bussiness', 'project management', 'public speaking', 'accounting', 'python', 'communication', 'html5', 'MySQL', 'c#', 'singing', 'dancing', 'idol', 'arts']
 
 def extract_sec_info(resume_text, skills_list):
     doc = nlp(resume_text)
+    
     name = None
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -50,24 +52,24 @@ def extract_sec_info(resume_text, skills_list):
 
 def extract_info(resume_text, skills_list):
     doc = nlp(resume_text)
+
     skills = []
     for skill in skills_list:
         if skill.lower() in resume_text.lower():
             skills.append(skill.lower())
     skills = list(set(skills))
-
+   
     experience = []
     for match in experience_pattern.finditer(resume_text):
         years_of_experience = match.group(1)
-        field = match.group(2).lower()
+        field = match.group(2)
         experience_str = f"{years_of_experience} years of experience in {field}"
-        break
-    ''' 
+        experience.append(experience_str.replace('\xa0', '').lower())
+
     job_titles = re.findall(job_title_pattern, resume_text, re.IGNORECASE)
     for title in job_titles:
-        title = ''.join(filter(None, title))
-        experience.append(title.lower())
-    '''    
+        experience.append(''.join(filter(None, title)).lower())
+
     education = []
     for match in re.findall(education_pattern, resume_text):
         degree = match[0].lower()
@@ -75,15 +77,14 @@ def extract_info(resume_text, skills_list):
         education.append(degree + ' ' + institution)
 
     if not education:
-        lines = resume_text.lower().split('\n') # convert resume_text to lowercase
+        lines = resume_text.split('\n')
         for line in lines:
-            if 'degree' in line or 'bachelor' in line or 'master' in line:
-                education.append(line.strip())
-
+            if 'degree' in line.lower() or 'bachelor' in line.lower() or 'master' in line.lower():
+                education.append(line.strip().lower())
+    
     languages = []       
     for match in re.findall(language_pattern, resume_text):
-        language = match.lower()
-        languages.append(language)
+        languages.append(match.lower())
     
     my_list=[]
     my_list.extend(skills)
@@ -93,22 +94,13 @@ def extract_info(resume_text, skills_list):
     
     return my_list
 
-def remove_stopwords(text_list):
-    stop_words = set(stopwords.words('english'))
-    filtered_list = []
-    for text in text_list:
-        words = text.split()
-        filtered_words = [word for word in words if word.lower() not in stop_words]
-        filtered_list.append(" ".join(filtered_words))
-    return filtered_list
-
-def cosine_similarity(filtered_info,filtered_req):
+def cosine_similarity(info,reqs_list):
     l1=[]; l2=[]
-    rvector = filtered_info +filtered_req
+    rvector = info +reqs_list
     for word in rvector:
-        if word in filtered_info: l1.append(1) # create a vector 
+        if word in info: l1.append(1) # create a vector 
         else: l1.append(0)
-        if word in filtered_req: l2.append(1)
+        if word in reqs_list: l2.append(1)
         else: l2.append(0)
     c = 0
 
@@ -117,28 +109,25 @@ def cosine_similarity(filtered_info,filtered_req):
     cosine = c / float((sum(l1)*sum(l2))**0.5)
     return cosine*100 
 
-folder_path = "C:/Users/user/Desktop/resumes"
-
+folder_path = "C:/Users/User/Desktop/resumes"
 resume_scores = {}
 for filename in os.listdir(folder_path):
     file_path = os.path.join(folder_path, filename)
-  
     if filename.endswith(".docx"):
-        resume_text = docx2txt.process(file_path).lower()
+        resume_text = docx2txt.process(file_path)
         info = extract_info(resume_text, skills_list)
         sec_info=extract_sec_info(resume_text, skills_list)
-        filtered_info=remove_stopwords(info)
-        filtered_req=remove_stopwords(reqs_list)
-        score=cosine_similarity(filtered_info,filtered_req)
-        resume_scores[filename] = score
+        cosine=cosine_similarity(info,reqs_list)
+        resume_scores[filename] = cosine
+   
     print()
     print("Resume:", filename)
-    print(filtered_info)
+    print(info)
     print()
     print(sec_info)
-    print("similarity:", "%.1f" % (score))
+    print("similarity:", "%.2f" % (cosine))
     print()
 top_resumes = sorted(resume_scores.items(), key=lambda x: x[1], reverse=True)[:3]
 print("Top 3 Resumes:")
-for resume_file, score in top_resumes:
-    print(f"{resume_file}: {score:.2f}")
+for resume_file, cosine in top_resumes:
+    print(f"{resume_file}: {cosine:.2f}")
